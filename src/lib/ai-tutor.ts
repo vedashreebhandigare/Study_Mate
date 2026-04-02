@@ -1,8 +1,8 @@
 import { handleGeminiError } from "./gemini-error-handler";
+import { GEMINI_MODEL, GEMINI_API_BASE_URL } from "./gemini";
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
-const GEMINI_MODEL = "gemini-2.5-pro"; // Best model for educational content and document analysis
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const GEMINI_API_URL = GEMINI_API_BASE_URL;
 
 export type TutorMode = "general" | "focused";
 

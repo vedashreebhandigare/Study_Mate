@@ -53,6 +53,7 @@ interface AITutorProps {
   isOpen: boolean;
   onClose: () => void;
   userId: string;
+  isStandalone?: boolean;
 }
 
 // Code Block Component with Copy Functionality
@@ -134,7 +135,7 @@ function CodeBlock({
   );
 }
 
-export function AITutor({ isOpen, onClose, userId }: AITutorProps) {
+export function AITutor({ isOpen, onClose, userId, isStandalone = false }: AITutorProps) {
   const [mode, setMode] = useState<TutorMode>('general');
   const [messages, setMessages] = useState<TutorMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -324,13 +325,8 @@ export function AITutor({ isOpen, onClose, userId }: AITutorProps) {
     ? EXAMPLE_PROMPTS_GENERAL 
     : EXAMPLE_PROMPTS_FOCUSED;
 
-  return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent 
-        side="right" 
-        className="w-full sm:max-w-3xl p-0 bg-gradient-to-br from-purple-950/95 via-slate-950/95 to-blue-950/95 border-purple-500/20"
-      >
-        <div className="flex flex-col h-full">
+  const content = (
+    <div className={`flex flex-col h-full ${isStandalone ? 'glass-panel rounded-3xl overflow-hidden border-purple-500/20 shadow-2xl' : ''}`}>
           {/* Header */}
           <SheetHeader className="p-6 pb-4 border-b border-purple-500/20">
             <div className="flex items-center justify-between">
@@ -769,6 +765,23 @@ export function AITutor({ isOpen, onClose, userId }: AITutorProps) {
             </div>
           </div>
         </div>
+  );
+
+  if (isStandalone) {
+    return (
+      <div className="h-full max-w-5xl mx-auto px-4 pb-10">
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent 
+        side="right" 
+        className="w-full sm:max-w-3xl p-0 bg-gradient-to-br from-purple-950/95 via-slate-950/95 to-blue-950/95 border-purple-500/20"
+      >
+        {content}
       </SheetContent>
     </Sheet>
   );

@@ -6,6 +6,7 @@
  */
 
 import { parseConceptMapJSON } from './json-parser-robust';
+import { GEMINI_API_BASE_URL } from './gemini';
 
 // Node types for visual differentiation
 export type NodeType = "model" | "dataset" | "metric" | "technique" | "component" | "tradeoff";
@@ -64,10 +65,9 @@ const getApiKey = () => {
   }
 };
 
-// Initialize Gemini API key and URL
+// Initialize Gemini API key and URL — model is imported from gemini.ts (single source of truth)
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
-const GEMINI_MODEL = 'gemini-2.5-pro'; // Latest stable Pro model for structured output
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const GEMINI_API_URL = GEMINI_API_BASE_URL;
 
 interface GeminiResponse {
   candidates: Array<{

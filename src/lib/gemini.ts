@@ -6,9 +6,11 @@ import { withRateLimit } from './rate-limiter';
 // Get API key from environment variable
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
 
-// Use gemini-2.0-flash (Fast + Accurate, RECOMMENDED for quiz generation)
-const GEMINI_MODEL = 'gemini-2.0-flash'; // ✅ Fast, accurate, handles PhD-level content
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+// Single source of truth for model name — all other files should import this
+export const GEMINI_MODEL = 'gemini-2.5-flash';
+export const GEMINI_API_BASE_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+const GEMINI_API_URL = GEMINI_API_BASE_URL;
 
 interface GeminiResponse {
   candidates: Array<{

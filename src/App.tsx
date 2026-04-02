@@ -12,9 +12,12 @@ import { RateLimitIndicator } from "./components/RateLimitIndicator";
 import { supabase } from "./lib/supabase";
 import { User } from "@supabase/supabase-js";
 import { Toaster } from "./components/ui/sonner";
+import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
-type Page = "home" | "auth" | "study-session" | "dashboard" | "profile";
+import { AITutor } from "./components/AITutor";
+
+type Page = "home" | "auth" | "study-session" | "dashboard" | "profile" | "ai-tutor";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>("home");
@@ -28,7 +31,7 @@ export default function App() {
       
       // Check URL hash for page navigation
       const hash = window.location.hash.slice(1); // Remove the #
-      if (hash && ['home', 'auth', 'study-session', 'dashboard', 'profile'].includes(hash)) {
+      if (hash && ['home', 'auth', 'study-session', 'dashboard', 'profile', 'ai-tutor'].includes(hash)) {
         // If hash is explicitly set (e.g., from Flask redirect), use it
         setCurrentPage(hash as Page);
       } else if (session?.user) {
@@ -49,7 +52,7 @@ export default function App() {
       // Check if user is coming back from Flask (hash = dashboard)
       const hash = window.location.hash.slice(1);
       
-      if (session?.user && _event === "SIGNED_IN" && hash !== "dashboard" && hash !== "profile") {
+      if (session?.user && _event === "SIGNED_IN" && hash !== "dashboard" && hash !== "profile" && hash !== "ai-tutor") {
         // NEW WORKFLOW: Redirect to study-session ONLY on fresh sign-in
         setCurrentPage("study-session");
         window.location.hash = "study-session";
@@ -62,12 +65,26 @@ export default function App() {
     // Listen for hash changes
     const handleHashChange = () => {
       const hash = window.location.hash.slice(1);
-      if (hash && ['home', 'auth', 'study-session', 'dashboard', 'profile'].includes(hash)) {
+      if (hash && ['home', 'auth', 'study-session', 'dashboard', 'profile', 'ai-tutor'].includes(hash)) {
         setCurrentPage(hash as Page);
       }
     };
     
     window.addEventListener('hashchange', handleHashChange);
+
+    // Listen for session completion from Flask
+    const checkSessionCompletion = () => {
+      const completed = localStorage.getItem('sessionCompleted');
+      if (completed === 'true') {
+        toast.success("Welcome back! Your study session results have been synchronized.", {
+          description: "All documents and metrics are now up to date.",
+          duration: 5000,
+        });
+        localStorage.removeItem('sessionCompleted');
+      }
+    };
+    
+    checkSessionCompletion();
 
     return () => {
       subscription.unsubscribe();
@@ -144,9 +161,19 @@ export default function App() {
           {currentPage === "auth" && (
             <AuthPage onNavigate={handleNavigate} onAuthSuccess={handleAuthSuccess} />
           )}
-          {currentPage === "study-session" && <StudySessionPage onNavigate={handleNavigate} />}
+          {currentPage === "study-session" && <StudySessionPage onNavigate={handleNavigate} user={user} />}
           {currentPage === "dashboard" && <Dashboard />}
           {currentPage === "profile" && <ProfilePage onNavigate={handleNavigate} />}
+          {currentPage === "ai-tutor" && user && (
+            <div className="pt-24 h-screen">
+              <AITutor 
+                isOpen={true} 
+                isStandalone={true}
+                onClose={() => handleNavigate("dashboard")} 
+                userId={user.id} 
+              />
+            </div>
+          )}
         </motion.div>
       </AnimatePresence>
     </div>

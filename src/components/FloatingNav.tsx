@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Home, BookOpen, Sparkles, User, LogOut } from "lucide-react";
+import { Home, BookOpen, Sparkles, User, LogOut, Brain } from "lucide-react";
 
 interface FloatingNavProps {
   currentPage: string;
@@ -16,6 +16,7 @@ export function FloatingNav({ currentPage, onNavigate, showDashboardItems = fals
 
   const dashboardItems = [
     { name: "Dashboard", icon: Home, page: "dashboard" },
+    { name: "AI Tutor", icon: Brain, page: "ai-tutor" },
     { name: "Profile", icon: User, page: "profile" },
     { name: "Logout", icon: LogOut, page: "home" },
   ];

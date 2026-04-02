@@ -3,19 +3,71 @@ import { useEffect } from "react";
 
 interface StudySessionPageProps {
   onNavigate: (page: string) => void;
+  user: any;
 }
 
-export function StudySessionPage({ onNavigate }: StudySessionPageProps) {
-  const flaskUrl = import.meta.env.VITE_FLASK_URL || 'http://localhost:5000';
+export function StudySessionPage({ onNavigate, user }: StudySessionPageProps) {
+  const flaskUrl = (import.meta.env.VITE_FLASK_URL || "").trim();
 
   useEffect(() => {
-    // Store the return URL in localStorage for Flask to use
-    localStorage.setItem('returnToReact', 'true');
-    localStorage.setItem('reactUrl', window.location.origin);
-    
-    // Redirect to Flask app directly (no iframe)
-    window.location.href = flaskUrl;
-  }, [flaskUrl]);
+    let isCancelled = false;
+
+    const goToDashboard = () => {
+      if (isCancelled) return;
+      onNavigate("dashboard");
+      window.location.hash = "dashboard";
+    };
+
+    const redirectToStudySession = async () => {
+      if (!flaskUrl) {
+        goToDashboard();
+        return;
+      }
+
+      let targetUrl: URL;
+      try {
+        targetUrl = new URL(flaskUrl);
+      } catch {
+        goToDashboard();
+        return;
+      }
+
+      // Store the return URL in localStorage for Flask to use.
+      localStorage.setItem("returnToReact", "true");
+      localStorage.setItem("reactUrl", window.location.origin);
+
+      // Quick reachability check. If Flask is down/unreachable, avoid browser error page.
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 2500);
+
+      try {
+        await fetch(targetUrl.toString(), {
+          method: "GET",
+          mode: "no-cors",
+          signal: controller.signal,
+        });
+
+        if (!isCancelled) {
+          // Pass the user's name to Flask to auto-fill the setup form
+          const name = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "";
+          if (name) {
+            targetUrl.searchParams.set("name", name);
+          }
+          window.location.assign(targetUrl.toString());
+        }
+      } catch {
+        goToDashboard();
+      } finally {
+        window.clearTimeout(timeout);
+      }
+    };
+
+    redirectToStudySession();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [flaskUrl, onNavigate]);
 
   return (
     <motion.div

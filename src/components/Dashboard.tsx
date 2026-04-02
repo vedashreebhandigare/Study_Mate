@@ -109,17 +109,24 @@ export function Dashboard() {
 
   // Refresh dashboard data when returning from Flask app with ?refresh=true
   useEffect(() => {
-    if (window.location.search.includes('refresh=true')) {
+    const hasRefreshFlag = window.location.search.includes('refresh=true') || 
+                          window.location.hash.includes('refresh=true');
+                          
+    if (hasRefreshFlag) {
       console.log('🔄 Refreshing dashboard data...');
       checkDocumentsExist();
       loadUserDocuments();
       if (selectedFlashcardDocument) {
         reloadFlashcards(selectedFlashcardDocument);
       }
-      // Remove query param from URL
-      window.history.replaceState({}, '', '/dashboard');
+      
+      // Clean up the URL: remove refresh=true from search and hash
+      const cleanUrl = window.location.href
+        .replace(/[?&]refresh=true/, '')
+        .replace(/#dashboard\?refresh=true/, '#dashboard');
+      window.history.replaceState({}, '', cleanUrl);
     }
-  }, []);
+  }, [selectedFlashcardDocument]);
 
   // Check if any documents exist
   const checkDocumentsExist = async () => {
@@ -528,9 +535,11 @@ export function Dashboard() {
                         <div className="mb-6 flex gap-4">
                           <GlassButton
                             onClick={() => setFlashcards([])}
-                            icon={Sparkles}
                           >
-                            Generate More Flashcards
+                            <div className="flex items-center gap-2">
+                              <Sparkles className="w-5 h-5" />
+                              Generate More Flashcards
+                            </div>
                           </GlassButton>
                         </div>
                         <FlashcardClusterView flashcards={flashcards} />
